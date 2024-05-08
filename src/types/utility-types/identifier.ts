@@ -1,18 +1,18 @@
 import {
-  MstError,
-  createScalarNode,
-  SimpleType,
-  TypeFlags,
-  isType,
+  AnyObjectNode,
+  ISimpleType,
   IValidationContext,
   IValidationResult,
-  typeCheckFailure,
   ModelType,
-  typeCheckSuccess,
-  ISimpleType,
-  AnyObjectNode,
+  MstError,
   ScalarNode,
-  assertArg
+  SimpleType,
+  TypeFlags,
+  assertArg,
+  createScalarNode,
+  isType,
+  typeCheckFailure,
+  typeCheckSuccess
 } from "../../internal"
 
 abstract class BaseIdentifierType<T> extends SimpleType<T, T, T> {
@@ -37,11 +37,13 @@ abstract class BaseIdentifierType<T> extends SimpleType<T, T, T> {
   }
 
   reconcile(current: this["N"], newValue: this["C"], parent: AnyObjectNode, subpath: string) {
-    // we don't consider detaching here since identifier are scalar nodes, and scalar nodes cannot be detached
-    if (current.storedValue !== newValue)
-      throw new MstError(
-        `Tried to change identifier from '${current.storedValue}' to '${newValue}'. Changing identifiers is not allowed.`
-      )
+    if (current.storedValue !== newValue) {
+      console.log("changed id")
+      const newIdentifier = this.instantiate(parent, subpath, undefined, newValue)
+      current.die()
+      return newIdentifier
+    }
+    console.log("did not changed id")
     current.setParent(parent, subpath)
     return current
   }
